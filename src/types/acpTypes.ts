@@ -52,6 +52,7 @@ export type AcpBackendAll =
   | 'opencode' // OpenCode CLI
   | 'copilot' // GitHub Copilot CLI
   | 'qoder' // Qoder CLI
+  | 'kiro-cli' // Kiro CLI
   | 'openclaw-gateway' // OpenClaw Gateway WebSocket
   | 'vibe' // Mistral Vibe CLI
   | 'nanobot' // nanobot CLI
@@ -401,6 +402,15 @@ export const ACP_BACKENDS_ALL: Record<AcpBackendAll, AcpBackendConfig> = {
     enabled: true, // ✅ Qoder CLI，使用 `qodercli --acp` 启动
     supportsStreaming: false,
     acpArgs: ['--acp'], // qoder 使用 --acp flag
+  },
+  'kiro-cli': {
+    id: 'kiro-cli',
+    name: 'Kiro CLI',
+    cliCommand: 'kiro-cli',
+    authRequired: false,
+    enabled: true, // ✅ Kiro CLI ACP mode
+    supportsStreaming: false,
+    acpArgs: ['acp'], // kiro-cli 使用 acp 子命令
   },
   vibe: {
     id: 'vibe',
