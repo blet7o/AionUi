@@ -245,7 +245,7 @@ export function registerAuthRoutes(app: Express): void {
       }
 
       // Verify current password
-      const isValidPassword = await AuthService.verifyPassword(currentPassword, user.password_hash);
+      const isValidPassword = await AuthService.constantTimeVerify(currentPassword, user.password_hash, true);
       if (!isValidPassword) {
         res.status(401).json({
           success: false,
