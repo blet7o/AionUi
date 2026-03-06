@@ -357,7 +357,7 @@ const URLViewer: React.FC<URLViewerProps> = ({ url }) => {
           className='border-0 absolute left-0 top-0'
           // @ts-expect-error webview attributes not typed
           allowpopups='false'
-          webpreferences='contextIsolation=no, nodeIntegration=no, nativeWindowOpen=no'
+          webpreferences='contextIsolation=yes, nodeIntegration=no, nativeWindowOpen=no'
         />
       </div>
     </div>
