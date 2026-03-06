@@ -1,0 +1,4 @@
+## 2024-05-24 - ContextIsolation disablement in URLViewer webview
+**Vulnerability:** Found `webpreferences='contextIsolation=no, nodeIntegration=no, nativeWindowOpen=no'` in `src/renderer/pages/conversation/preview/components/viewers/URLViewer.tsx`.
+**Learning:** `contextIsolation=no` in Electron's `webview` or `BrowserWindow` exposes the renderer process's internal APIs to the web content, which is a major security risk, particularly for displaying arbitrary user-provided URLs as this URLViewer component does. While `nodeIntegration` is `no`, disabling `contextIsolation` allows scripts loaded in the webview to modify JavaScript built-in objects or the prototype chain, potentially interfering with the host Electron application and leaking privileged information.
+**Prevention:** Always ensure `contextIsolation=yes` (which is the default in modern Electron versions, but explicitly disabling it is very bad) when loading untrusted external web content.
