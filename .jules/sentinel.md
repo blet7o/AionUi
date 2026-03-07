@@ -1,0 +1,4 @@
+## 2024-03-07 - [CRITICAL/HIGH] Fix XSS Vulnerability in DOM injection
+**Vulnerability:** Found multiple instances where raw, unsanitized user-generated or server-provided HTML content (such as diff results and parsed Markdown/KaTeX equations) was being directly injected into the DOM via React's `dangerouslySetInnerHTML`.
+**Learning:** The usage of `dangerouslySetInnerHTML` directly with variables like `diffHtmlContent`, `displayContent`, and `html` can introduce severe XSS vulnerabilities if the inputs are not meticulously sanitized. Libraries like `diff2html` and `katex` generate HTML strings that might include malicious script payloads if the source data is compromised.
+**Prevention:** Always use a robust HTML sanitization library, such as `DOMPurify`, to wrap any variable passed to `dangerouslySetInnerHTML`. Example: `dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(unsafeContent) }}`.
