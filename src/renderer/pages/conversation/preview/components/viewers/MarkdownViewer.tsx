@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 /**
  * @license
  * Copyright 2025 AionUi (aionui.com)
@@ -411,7 +412,7 @@ const MarkdownPreview: React.FC<MarkdownPreviewProps> = ({ content, onClose, hid
                           displayMode: true,
                           throwOnError: false,
                         });
-                        return <div className='katex-display' dangerouslySetInnerHTML={{ __html: html }} />;
+                        return <div className='katex-display' dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html) }} />;
                       } catch {
                         // Fall through to render as code block if KaTeX fails
                       }

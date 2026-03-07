@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 /**
  * @license
  * Copyright 2025 AionUi (aionui.com)
@@ -145,9 +146,7 @@ const Diff2Html = ({ diff, className, title, filePath }: { diff: string; classNa
             'd2h-dark-color-scheme': theme === 'dark',
           })}
           ref={containerRef}
-          dangerouslySetInnerHTML={{
-            __html: diffHtmlContent,
-          }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(diffHtmlContent) }}
         ></div>
         {operatorRef.current &&
           ReactDOM.createPortal(
