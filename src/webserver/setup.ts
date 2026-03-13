@@ -74,11 +74,17 @@ export function setupBasicMiddleware(app: Express): void {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+  // Generate random secret for cookie parser, or use env var
+  // For cookie parser we use CSRF_SECRET to keep cookies valid across restarts
+  // as getCsrfSecret() already handles the fallback to a random secret
+  // or the env var CSRF_SECRET
+  const cookieSecret = process.env.COOKIE_SECRET || CSRF_SECRET;
+
   // CSRF Protection using tiny-csrf (CodeQL compliant)
   // Must be applied after cookieParser and before routes
   // CSRF 保护使用 tiny-csrf（符合 CodeQL 要求）
   // 必须在 cookieParser 之后、路由之前应用
-  app.use(cookieParser('cookie-parser-secret'));
+  app.use(cookieParser(cookieSecret));
   // P1 安全修复：登录接口启用 CSRF 保护（前端已添加 withCsrfToken）
   // P1 Security fix: Enable CSRF for login (frontend already uses withCsrfToken)
   // 仅排除 QR 登录（有独立的一次性 token 保护机制）
