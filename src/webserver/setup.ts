@@ -69,6 +69,9 @@ const CSRF_SECRET = getCsrfSecret();
  * Configure basic middleware for Express app
  */
 export function setupBasicMiddleware(app: Express): void {
+  // Disable x-powered-by header to prevent information leakage
+  app.disable('x-powered-by');
+
   // 请求体解析器
   // Body parsers
   app.use(express.json({ limit: '10mb' }));
