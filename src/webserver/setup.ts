@@ -60,9 +60,30 @@ function getCsrfSecret(): string {
   return randomSecret;
 }
 
+/**
+ * 获取或生成 Cookie Parser Secret
+ * Get or generate Cookie Parser secret
+ *
+ * 优先级：环境变量 > 随机生成（每次启动不同）
+ * Priority: Environment variable > Random generation (different on each startup)
+ */
+function getCookieSecret(): string {
+  // 优先使用环境变量 / Prefer environment variable
+  if (process.env.COOKIE_SECRET) {
+    return process.env.COOKIE_SECRET;
+  }
+
+  // 生成随机 32 字符密钥（16 字节的 hex 编码）
+  // Generate random 32-character secret (16 bytes hex encoded)
+  const randomSecret = crypto.randomBytes(16).toString('hex');
+  console.log('[security] Generated random cookie parser secret for this session');
+  return randomSecret;
+}
+
 // 在模块加载时生成一次，整个进程生命周期内保持不变
 // Generate once at module load, remains constant for process lifetime
 const CSRF_SECRET = getCsrfSecret();
+const COOKIE_SECRET = getCookieSecret();
 
 /**
  * 配置基础中间件
@@ -78,7 +99,7 @@ export function setupBasicMiddleware(app: Express): void {
   // Must be applied after cookieParser and before routes
   // CSRF 保护使用 tiny-csrf（符合 CodeQL 要求）
   // 必须在 cookieParser 之后、路由之前应用
-  app.use(cookieParser('cookie-parser-secret'));
+  app.use(cookieParser(COOKIE_SECRET));
   // P1 安全修复：登录接口启用 CSRF 保护（前端已添加 withCsrfToken）
   // P1 Security fix: Enable CSRF for login (frontend already uses withCsrfToken)
   // 仅排除 QR 登录（有独立的一次性 token 保护机制）
