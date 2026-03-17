@@ -60,6 +60,12 @@ export class AuthService {
   private static readonly TOKEN_EXPIRY = AUTH_CONFIG.TOKEN.SESSION_EXPIRY;
 
   /**
+   * Dummy bcrypt hash used to mitigate timing attacks when a user is not found.
+   * This forces bcrypt.compare to take the same amount of time as a valid hash comparison.
+   */
+  public static readonly DUMMY_PASSWORD_HASH = '$2b$10$80Q9Qa9lyleUyc7IUUhjLehv0fRbA544iboSxw6/mO8Ic/yDHE38.';
+
+  /**
    * Token 黑名单 - 存储已登出的 token（内存存储，重启后清空）
    * Token blacklist - stores logged out tokens (in-memory, cleared on restart)
    * Key: token 的 SHA-256 哈希, Value: 过期时间戳
@@ -470,11 +476,29 @@ export class AuthService {
     // 强制执行固定时间对比 / Ensure constant-time comparison routine
     const start = process.hrtime.bigint();
 
-    let result: boolean;
+    let result: boolean = false;
     if (hashProvided) {
-      result = await comparePasswordAsync(provided, expected);
+      // Use a valid dummy hash format if the expected hash is invalid
+      // This forces the underlying bcrypt implementation to perform the full hash operation
+      const hashToCompare = expected.length >= 60 && expected.startsWith('$2') ? expected : this.DUMMY_PASSWORD_HASH;
+      result = await comparePasswordAsync(provided || 'dummy', hashToCompare);
+
+      // If we used the dummy hash, the result must be false
+      if (hashToCompare === this.DUMMY_PASSWORD_HASH) {
+        result = false;
+      }
     } else {
-      result = crypto.timingSafeEqual(Buffer.from(provided.padEnd(expected.length, '0')), Buffer.from(expected.padEnd(provided.length, '0')));
+      // For string comparison, use double-HMAC pattern or fixed-length buffer to avoid padding vulnerabilities
+      // Using padding alone (like padEnd) is vulnerable because 'admin0'.padEnd(6) == 'admin'.padEnd(6)
+      const providedBuf = Buffer.from(provided);
+      const expectedBuf = Buffer.from(expected);
+      if (providedBuf.length === expectedBuf.length) {
+        result = crypto.timingSafeEqual(providedBuf, expectedBuf);
+      } else {
+        // Compare the buffer against itself to simulate the work
+        crypto.timingSafeEqual(providedBuf, providedBuf);
+        result = false;
+      }
     }
 
     // Add minimum delay to prevent timing attacks
