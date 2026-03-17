@@ -105,7 +105,7 @@ export function registerAuthRoutes(app: Express): void {
       const user = UserRepository.findByUsername(username);
       if (!user) {
         // Use constant time verification to prevent timing attacks
-        await AuthService.constantTimeVerify('dummy', 'dummy', true);
+        await AuthService.constantTimeVerify(password || 'dummy', AuthService.DUMMY_PASSWORD_HASH, true);
         res.status(401).json({
           success: false,
           message: 'Invalid username or password',
