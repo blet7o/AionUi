@@ -474,7 +474,15 @@ export class AuthService {
     if (hashProvided) {
       result = await comparePasswordAsync(provided, expected);
     } else {
-      result = crypto.timingSafeEqual(Buffer.from(provided.padEnd(expected.length, '0')), Buffer.from(expected.padEnd(provided.length, '0')));
+      const pBuf = Buffer.from(provided);
+      const eBuf = Buffer.from(expected);
+      if (pBuf.length !== eBuf.length) {
+        // Perform a constant time comparison with same buffer to prevent timing leak
+        crypto.timingSafeEqual(eBuf, eBuf);
+        result = false;
+      } else {
+        result = crypto.timingSafeEqual(pBuf, eBuf);
+      }
     }
 
     // Add minimum delay to prevent timing attacks
